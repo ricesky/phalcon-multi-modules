@@ -20,11 +20,11 @@ use Phalcon\Db\Result\PdoSqlsrv as ResultPdo;
  *
  * @property \Phalcon\Db\Dialect\Sqlsrv $_dialect
  */
-class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInterface
+class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
 {
 
-    protected $_type = 'sqlsrv';
-    protected $_dialectType = 'sqlsrv';
+    protected $type = 'sqlsrv';
+    protected $dialectType = 'sqlsrv';
 
     /**
      * This method is automatically called in Phalcon\Db\Adapter\Pdo constructor.
@@ -34,7 +34,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      *
      * @return bool
      */
-    public function connect(array $descriptor = null)
+    public function connect(array $descriptor = null): bool
     {
         if (is_null($descriptor) === true) {
             $descriptor = $this->_descriptor;
@@ -50,7 +50,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
             $options = array();
         }
 
-        $dsn = "sqlsrv:server=" . $descriptor['host'] . ";database=" . $descriptor['dbname'] . ";";
+        $dsn = "sqlsrv:Server=" . $descriptor['host'] . ";Database=" . $descriptor['dbname'] . ";";
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
@@ -61,7 +61,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
          * Set dialect class
          */
         if (isset($descriptor['dialectClass']) === false) {
-            $dialectClass = 'Phalcon\\Db\\Dialect\\' . ucfirst($this->_dialectType);
+            $dialectClass = 'Phalcon\\Db\\Dialect\\' . ucfirst($this->dialectType);
         } else {
             $dialectClass = $descriptor['dialectClass'];
         }
@@ -71,8 +71,10 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
          */
         if (is_string($dialectClass) === true) {
             $dialectObject = new $dialectClass();
-            $this->_dialect = $dialectObject;
+            $this->dialect = $dialectObject;
         }
+
+        return true;
     }
 
     /**
@@ -84,9 +86,9 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      * @param string $table
      * @param string $schema
      *
-     * @return \Phalcon\Db\Column
+     * @return array|\Phalcon\Db\ColumnInterface[]
      */
-    public function describeColumns($table, $schema = null)
+    public function describeColumns($table, string $schema = null): array
     {
         $oldColumn = null;
 
@@ -304,7 +306,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      */
     public function query($sqlStatement, $bindParams = null, $bindTypes = null)
     {
-        $eventsManager = $this->_eventsManager;
+        $eventsManager = $this->eventsManager;
 
         /*
          * Execute the beforeQuery event if a EventsManager is available
@@ -429,4 +431,13 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
     //
     //        return true;
     //    }
+    /**
+     * @inheritDoc
+     */
+    protected function getDsnDefaults(): array
+    {
+        return [
+            "charset" => "utf8mb4"
+        ];
+    }
 }

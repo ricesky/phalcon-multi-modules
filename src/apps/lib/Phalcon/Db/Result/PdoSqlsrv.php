@@ -24,7 +24,7 @@ class PdoSqlsrv extends Pdo
      *
      * @return int
      */
-    public function numRows()
+    public function numRows() : int
     {
         $rowCount = $this->_rowCount;
         if ($rowCount === false) {

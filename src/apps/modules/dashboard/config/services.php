@@ -10,7 +10,7 @@ $di['view'] = function () {
         [
             ".volt" => "voltService",
         ]
-    );
+        );
 
     return $view;
 };

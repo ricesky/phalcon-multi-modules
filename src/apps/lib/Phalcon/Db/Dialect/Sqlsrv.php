@@ -32,7 +32,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function limit($sqlQuery, $number)
+    public function limit(string $sqlQuery, $number) : string
     {
         $offset = 0;
         if (is_array($number)) {
@@ -58,7 +58,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      * echo $sql; // SELECT * FROM robots WITH (UPDLOCK)
      * </code>
      */
-    public function forUpdate($sqlQuery)
+    public function forUpdate(string $sqlQuery) : string
     {
         return $sqlQuery.' WITH (UPDLOCK) ';
     }
@@ -71,7 +71,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      * echo $sql; // SELECT * FROM robots WITH (NOLOCK)
      * </code>
      */
-    public function sharedLock($sqlQuery)
+    public function sharedLock(string $sqlQuery) : string
     {
         return $sqlQuery.' WITH (NOLOCK) ';
     }
@@ -83,7 +83,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function getColumnDefinition(\Phalcon\Db\ColumnInterface $column)
+    public function getColumnDefinition(\Phalcon\Db\ColumnInterface $column) : string
     {
         $columnSql = '';
         $type = $column->getType();
@@ -254,7 +254,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function addColumn($tableName, $schemaName, \Phalcon\Db\ColumnInterface $column)
+    public function addColumn(string $tableName, string $schemaName, \Phalcon\Db\ColumnInterface $column) : string
     {
         $sql = 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' ADD ['.$column->getName().'] '.$this->getColumnDefinition($column);
 
@@ -297,7 +297,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function modifyColumn($tableName, $schemaName, \Phalcon\Db\ColumnInterface $column, \Phalcon\Db\ColumnInterface $currentColumn = null)
+    public function modifyColumn(string $tableName, string $schemaName, \Phalcon\Db\ColumnInterface $column, \Phalcon\Db\ColumnInterface $currentColumn = null) : string
     {
         $sql = 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' ALTER COLUMN ['.$column->getName().'] '.$this->getColumnDefinition($column);
 
@@ -330,7 +330,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropColumn($tableName, $schemaName, $columnName)
+    public function dropColumn(string $tableName, string $schemaName, string $columnName) : string 
     {
         return 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' DROP COLUMN ['.$columnName.']';
     }
@@ -344,7 +344,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function addIndex($tableName, $schemaName, \Phalcon\Db\IndexInterface $index)
+    public function addIndex(string $tableName, string $schemaName, \Phalcon\Db\IndexInterface $index) : string
     {
         $indexType = $index->getType();
         if (!empty($indexType)) {
@@ -367,7 +367,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropIndex($tableName, $schemaName, $indexName)
+    public function dropIndex(string $tableName, string $schemaName, string $indexName) : string
     {
         return 'DROP INDEX ['.$indexName.'] ON '.$this->prepareTable($tableName, $schemaName);
     }
@@ -381,7 +381,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function addPrimaryKey($tableName, $schemaName, \Phalcon\Db\IndexInterface $index)
+    public function addPrimaryKey(string $tableName, string $schemaName, \Phalcon\Db\IndexInterface $index) : string
     {
         return 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' ADD PRIMARY KEY ('.$this->getColumnList($index->getColumns()).')';
     }
@@ -394,7 +394,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropPrimaryKey($tableName, $schemaName)
+    public function dropPrimaryKey(string $tableName, string $schemaName) : string
     {
         return 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' DROP PRIMARY KEY';
     }
@@ -408,7 +408,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function addForeignKey($tableName, $schemaName, \Phalcon\Db\ReferenceInterface $reference)
+    public function addForeignKey(string $tableName, string $schemaName, \Phalcon\Db\ReferenceInterface $reference) : string
     {
         $sql = 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' ADD CONSTRAINT ['.$reference->getName().'] FOREIGN KEY ('.$this->getColumnList($reference->getColumns()).') REFERENCES '.$this->prepareTable($reference->getReferencedTable(), $reference->getReferencedSchema()).'('.$this->getColumnList($reference->getReferencedColumns()).')';
 
@@ -434,7 +434,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropForeignKey($tableName, $schemaName, $referenceName)
+    public function dropForeignKey(string $tableName, string $schemaName, string $referenceName) : string
     {
         return 'ALTER TABLE '.$this->prepareTable($tableName, $schemaName).' DROP FOREIGN KEY ['.$referenceName.']';
     }
@@ -448,7 +448,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function createTable($tableName, $schemaName, array $definition)
+    public function createTable(string $tableName, string $schemaName, array $definition) : string
     {
         if (isset($definition['columns']) === false) {
             throw new Exception("The index 'columns' is required in the definition array");
@@ -574,7 +574,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropTable($tableName, $schemaName = null, $ifExists = true)
+    public function dropTable(string $tableName, string $schemaName = null, bool $ifExists = true) : string
     {
         $table = $this->prepareTable($tableName, $schemaName);
 
@@ -596,7 +596,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function createView($viewName, array $definition, $schemaName = null)
+    public function createView(string $viewName, array $definition, string $schemaName = null) : string
     {
         if (!isset($definition['sql'])) {
             throw new Exception("The index 'sql' is required in the definition array");
@@ -614,7 +614,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function dropView($viewName, $schemaName = null, $ifExists = true)
+    public function dropView(string $viewName, string $schemaName = null, bool $ifExists = true) : string
     {
         $view = $this->prepareTable($viewName, $schemaName);
 
@@ -639,7 +639,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function tableExists($tableName, $schemaName = null)
+    public function tableExists(string $tableName, string $schemaName = null) : string
     {
         $sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{$tableName}'";
 
@@ -658,7 +658,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function viewExists($viewName, $schemaName = null)
+    public function viewExists(string $viewName, string $schemaName = null) : string 
     {
         $sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = '{$viewName}'";
 
@@ -680,7 +680,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function describeColumns($table, $schema = null)
+    public function describeColumns(string $table, string $schema = null) : string
     {
         $sql = "exec sp_columns @table_name = '{$table}'";
         if ($schema) {
@@ -700,7 +700,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function listTables($schemaName = null)
+    public function listTables(string $schemaName = null) : string
     {
         $sql = 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES';
         if ($schemaName) {
@@ -717,7 +717,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function listViews($schemaName = null)
+    public function listViews(string $schemaName = null) : string
     {
         $sql = 'SELECT TABLE_NAME AS view_name FROM INFORMATION_SCHEMA.VIEWS';
         if ($schemaName) {
@@ -735,7 +735,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function describeIndexes($table, $schema = null)
+    public function describeIndexes(string $table, string $schema = null) : string
     {
         $sql = "SELECT * FROM sys.indexes ind INNER JOIN sys.tables t ON ind.object_id = t.object_id WHERE t.name = '{$table}'";
         if ($schema) {
@@ -752,7 +752,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function describeReferences($table, $schema = null)
+    public function describeReferences(string $table, string $schema = null) : string
     {
         $sql = 'SELECT TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME IS NOT NULL AND ';
         if ($schema) {
@@ -772,7 +772,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function tableOptions($table, $schema = null)
+    public function tableOptions(string $table, string $schema = null) : string
     {
         $sql = 'SELECT TABLES.TABLE_TYPE AS table_type,TABLES.AUTO_INCREMENT AS auto_increment,TABLES.ENGINE AS engine,TABLES.TABLE_COLLATION AS table_collation FROM INFORMATION_SCHEMA.TABLES WHERE ';
         if ($schema) {
@@ -791,7 +791,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    protected function _getTableOptions($definition)
+    protected function _getTableOptions(array $definition) : string
     {
         if (isset($definition['options']) === true) {
             $tableOptions = array();
@@ -839,7 +839,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      *
      * @return string
      */
-    public function getPrimaryKey($table, $schema = null)
+    public function getPrimaryKey(string $table, string $schema = null) : string
     {
         $sql = "exec sp_pkeys @table_name = '{$table}'";
         if ($schema) {
