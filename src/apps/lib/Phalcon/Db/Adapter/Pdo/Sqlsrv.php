@@ -37,7 +37,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
     public function connect(array $descriptor = null): bool
     {
         if (is_null($descriptor) === true) {
-            $descriptor = $this->_descriptor;
+            $descriptor = $this->descriptor;
         }
 
         /*
@@ -54,8 +54,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
-        $this->_pdo = new \PDO($dsn, $dbusername, $dbpassword);
-        $this->_pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->pdo = new \PDO($dsn, $dbusername, $dbpassword);
+        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         /*
          * Set dialect class
@@ -321,7 +321,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
             }
         }
 
-        $pdo = $this->_pdo;
+        $pdo = $this->pdo;
 
         $cursor = \PDO::CURSOR_SCROLL;
         $cursorScrollType = \PDO::SQLSRV_CURSOR_STATIC;
@@ -378,59 +378,59 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
      *
      * @return bool
      */
-//    public function execute($sqlStatement, $bindParams = null, $bindTypes = null)
-    //    {
-    //        $eventsManager = $this->_eventsManager;
-    //
-    //        /*
-    //         * Execute the beforeQuery event if a EventsManager is available
-    //         */
-    //        if (is_object($eventsManager)) {
-    //            $this->_sqlStatement = $sqlStatement;
-    //            $this->_sqlVariables = $bindParams;
-    //            $this->_sqlBindTypes = $bindTypes;
-    //
-    //            if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        /*
-    //         * Initialize affectedRows to 0
-    //         */
-    //        $affectedRows = 0;
-    //
-    //        $pdo = $this->_pdo;
-    //
-    //        $cursor = \PDO::CURSOR_SCROLL;
-    //        if (strpos($sqlStatement, 'exec') !== false) {
-    //            $cursor = \PDO::CURSOR_FWDONLY;
-    //        }
-    //
-    //        if (is_array($bindParams)) {
+    public function execute($sqlStatement, $bindParams = null, $bindTypes = null): bool
+        {
+            $eventsManager = $this->eventsManager;
+
+            /*
+             * Execute the beforeQuery event if a EventsManager is available
+             */
+            if (is_object($eventsManager)) {
+                $this->_sqlStatement = $sqlStatement;
+                $this->_sqlVariables = $bindParams;
+                $this->_sqlBindTypes = $bindTypes;
+
+                if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
+                    return false;
+                }
+            }
+
+            /*
+             * Initialize affectedRows to 0
+             */
+            $affectedRows = 0;
+
+            $pdo = $this->pdo;
+
+            $cursor = \PDO::CURSOR_SCROLL;
+            if (strpos($sqlStatement, 'exec') !== false) {
+                $cursor = \PDO::CURSOR_FWDONLY;
+            }
+
+            if (is_array($bindParams)) {
+                $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
+                if (is_object($statement)) {
+                    $newStatement = $this->executePrepared($statement, $bindParams, $bindTypes);
+                    $affectedRows = $newStatement->rowCount();
+                }
+            } else {
     //            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    //            if (is_object($statement)) {
-    //                $newStatement = $this->executePrepared($statement, $bindParams, $bindTypes);
-    //                $affectedRows = $newStatement->rowCount();
-    //            }
-    //        } else {
-    ////            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    ////            $statement->execute();
-    //            $affectedRows = $pdo->exec($sqlStatement);
-    //        }
-    //
-    //        /*
-    //         * Execute the afterQuery event if an EventsManager is available
-    //         */
-    //        if (is_int($affectedRows)) {
-    //            $this->_affectedRows = affectedRows;
-    //            if (is_object($eventsManager)) {
-    //                $eventsManager->fire('db:afterQuery', $this, $bindParams);
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
+    //            $statement->execute();
+                $affectedRows = $pdo->exec($sqlStatement);
+            }
+
+            /*
+             * Execute the afterQuery event if an EventsManager is available
+             */
+            if (is_int($affectedRows)) {
+                $this->affectedRows = $affectedRows;
+                if (is_object($eventsManager)) {
+                    $eventsManager->fire('db:afterQuery', $this, $bindParams);
+                }
+            }
+
+            return true;
+        }
     /**
      * @inheritDoc
      */
