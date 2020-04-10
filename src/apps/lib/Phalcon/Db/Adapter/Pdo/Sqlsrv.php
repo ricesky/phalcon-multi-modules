@@ -312,9 +312,9 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
          * Execute the beforeQuery event if a EventsManager is available
          */
         if (is_object($eventsManager)) {
-            $this->_sqlStatement = $sqlStatement;
-            $this->_sqlVariables = $bindParams;
-            $this->_sqlBindTypes = $bindTypes;
+            $this->sqlStatement = $sqlStatement;
+            $this->sqlVariables = $bindParams;
+            $this->sqlBindTypes = $bindTypes;
 
             if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
                 return false;
@@ -386,9 +386,9 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
              * Execute the beforeQuery event if a EventsManager is available
              */
             if (is_object($eventsManager)) {
-                $this->_sqlStatement = $sqlStatement;
-                $this->_sqlVariables = $bindParams;
-                $this->_sqlBindTypes = $bindTypes;
+                $this->sqlStatement = $sqlStatement;
+                $this->sqlVariables = $bindParams;
+                $this->sqlBindTypes = $bindTypes;
 
                 if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
                     return false;
