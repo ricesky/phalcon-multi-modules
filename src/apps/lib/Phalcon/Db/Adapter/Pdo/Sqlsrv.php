@@ -18,7 +18,7 @@ use Phalcon\Db\Result\PdoSqlsrv as ResultPdo;
  * $connection = new \Phalcon\Db\Adapter\Pdo\Sqlsrv($config);
  * </code>.
  *
- * @property \Phalcon\Db\Dialect\Sqlsrv $_dialect
+ * @property \Phalcon\Db\Dialect\Sqlsrv $dialect
  */
 class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
 {
@@ -37,7 +37,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
     public function connect(array $descriptor = null): bool
     {
         if (is_null($descriptor) === true) {
-            $descriptor = $this->_descriptor;
+            $descriptor = $this->descriptor;
         }
 
         /*
@@ -50,12 +50,15 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
             $options = array();
         }
 
-        $dsn = "sqlsrv:Server=" . $descriptor['host'] . ";Database=" . $descriptor['dbname'] . ";";
+        $port = !empty($descriptor['port']) ? ",". $descriptor['port'] : "";
+
+        $dsn = "sqlsrv:Server=" . $descriptor['host'] . $port . ";Database=" . $descriptor['dbname'] . ";";
+
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
-        $this->_pdo = new \PDO($dsn, $dbusername, $dbpassword);
-        $this->_pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->pdo = new \PDO($dsn, $dbusername, $dbpassword);
+        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         /*
          * Set dialect class
@@ -96,7 +99,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
          * Get primary keys
          */
         $primaryKeys = array();
-        foreach ($this->fetchAll($this->_dialect->getPrimaryKey($table, $schema)) as $field) {
+        foreach ($this->fetchAll($this->dialect->getPrimaryKey($table, $schema)) as $field) {
             $primaryKeys[$field['COLUMN_NAME']] = true;
         }
 
@@ -106,7 +109,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
          * Get the describe
          * Field Indexes: 0:name, 1:type, 2:not null, 3:key, 4:default, 5:extra
          */
-        foreach ($this->fetchAll($this->_dialect->describeColumns($table, $schema)) as $field) {
+        foreach ($this->fetchAll($this->dialect->describeColumns($table, $schema)) as $field) {
             /*
              * By default the bind types is two
              */
@@ -125,6 +128,12 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
                 case 'tinyint identity':
                 case 'smallint identity':
                     $definition['type'] = Column::TYPE_INTEGER;
+                    $definition['isNumeric'] = true;
+                    $definition['bindType'] = Column::BIND_PARAM_INT;
+                    $autoIncrement = true;
+                    break;
+                case 'bigint identity':
+                    $definition['type'] = Column::TYPE_BIGINTEGER;
                     $definition['isNumeric'] = true;
                     $definition['bindType'] = Column::BIND_PARAM_INT;
                     $autoIncrement = true;
@@ -263,9 +272,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
             /*
              * Check if the column allows null values
              */
-            if ($field['NULLABLE'] == 0) {
-                $definition['notNull'] = true;
-            }
+            $definition['notNull'] = $field['NULLABLE'] == 0;
 
             /*
              * Check if the column is auto increment
@@ -312,16 +319,16 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
          * Execute the beforeQuery event if a EventsManager is available
          */
         if (is_object($eventsManager)) {
-            $this->_sqlStatement = $sqlStatement;
-            $this->_sqlVariables = $bindParams;
-            $this->_sqlBindTypes = $bindTypes;
+            $this->sqlStatement = $sqlStatement;
+            $this->sqlVariables = $bindParams;
+            $this->sqlBindTypes = $bindTypes;
 
             if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
                 return false;
             }
         }
 
-        $pdo = $this->_pdo;
+        $pdo = $this->pdo;
 
         $cursor = \PDO::CURSOR_SCROLL;
         $cursorScrollType = \PDO::SQLSRV_CURSOR_STATIC;
@@ -378,59 +385,59 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo
      *
      * @return bool
      */
-//    public function execute($sqlStatement, $bindParams = null, $bindTypes = null)
-    //    {
-    //        $eventsManager = $this->_eventsManager;
-    //
-    //        /*
-    //         * Execute the beforeQuery event if a EventsManager is available
-    //         */
-    //        if (is_object($eventsManager)) {
-    //            $this->_sqlStatement = $sqlStatement;
-    //            $this->_sqlVariables = $bindParams;
-    //            $this->_sqlBindTypes = $bindTypes;
-    //
-    //            if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        /*
-    //         * Initialize affectedRows to 0
-    //         */
-    //        $affectedRows = 0;
-    //
-    //        $pdo = $this->_pdo;
-    //
-    //        $cursor = \PDO::CURSOR_SCROLL;
-    //        if (strpos($sqlStatement, 'exec') !== false) {
-    //            $cursor = \PDO::CURSOR_FWDONLY;
-    //        }
-    //
-    //        if (is_array($bindParams)) {
-    //            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    //            if (is_object($statement)) {
-    //                $newStatement = $this->executePrepared($statement, $bindParams, $bindTypes);
-    //                $affectedRows = $newStatement->rowCount();
-    //            }
-    //        } else {
-    ////            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    ////            $statement->execute();
-    //            $affectedRows = $pdo->exec($sqlStatement);
-    //        }
-    //
-    //        /*
-    //         * Execute the afterQuery event if an EventsManager is available
-    //         */
-    //        if (is_int($affectedRows)) {
-    //            $this->_affectedRows = affectedRows;
-    //            if (is_object($eventsManager)) {
-    //                $eventsManager->fire('db:afterQuery', $this, $bindParams);
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
+    public function execute($sqlStatement, $bindParams = null, $bindTypes = null): bool
+    {
+        $eventsManager = $this->eventsManager;
+
+        /*
+         * Execute the beforeQuery event if a EventsManager is available
+         */
+        if (is_object($eventsManager)) {
+            $this->sqlStatement = $sqlStatement;
+            $this->sqlVariables = $bindParams;
+            $this->sqlBindTypes = $bindTypes;
+
+            if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
+                return false;
+            }
+        }
+
+        /*
+         * Initialize affectedRows to 0
+         */
+        $affectedRows = 0;
+
+        $pdo = $this->pdo;
+
+        $cursor = \PDO::CURSOR_SCROLL;
+        if (strpos($sqlStatement, 'exec') !== false) {
+            $cursor = \PDO::CURSOR_FWDONLY;
+        }
+
+        if (is_array($bindParams)) {
+            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
+            if (is_object($statement)) {
+                $newStatement = $this->executePrepared($statement, $bindParams, $bindTypes);
+                $affectedRows = $newStatement->rowCount();
+            }
+        } else {
+//            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
+//            $statement->execute();
+            $affectedRows = $pdo->exec($sqlStatement);
+        }
+
+        /*
+         * Execute the afterQuery event if an EventsManager is available
+         */
+        if (is_int($affectedRows)) {
+            $this->affectedRows = $affectedRows;
+            if (is_object($eventsManager)) {
+                $eventsManager->fire('db:afterQuery', $this, $bindParams);
+            }
+        }
+
+        return true;
+    }
     /**
      * @inheritDoc
      */
